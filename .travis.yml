@@ -4,18 +4,25 @@ branches:
   only:
   - master
 
+env:
+  global:
+    - DOCKER_REPO=getsentry/rust-musl-cross
+    # DOCKER_USER
+    - secure: "CKfhj7BKJEmtUDr4VWY7jSkANVKm/Y8lINyD7aEa+EAsHuqNFTanlWpLWpvsk5+1jHLaaz4EcCOHAVhjU27HaIE7asaY9m2ICXdfzP6j+ChSOZlsgaDpIdtNNJJf6Pmio6oRII4MofFj84pR5BUP8NWPW3M3Hy1dGOiydMYEgbAGcsl6YuUBtSinpqAHa00GRPW4ibM7ScbCTFp6PQwWiVRMWfTbChuUFNnUSb4AYkRU3+CsSP8oK1edhc0nP3BrIr9pBCLYDF0CwRBbV5Ra+bKLHKpvI0AUz1ULiaZSc46kcYiIrKz09Wa4KT0tYB5VgLoV7IMv3im17lIBuADpbo9uuuUg8gGuN//CHX/a4xikcWkBvMCSoZc6/CxB9+mEXfX196BSj6tmP80sbRv5qAzyj6xrVYEij9KZrI3JqVMVf/pcTP4RYy7TodNeN+3xMKKRGvhq7UprOvjrqrTgWn5L9nj3W/2mdZwrc0kFw3mcgwVGkfCM7l1YuLlD24x2gdS5DZgA0ZrhALeYOe0KRW5uXIF/OnFscgC6Fj0m189IkOoWiWyZTRiz53BIZxZB465gHcGbQ6cbhCmgU00TMgummklXPpU/8aTGEmqMfyL9LUDGyUaxXQKsCQmLXO5wVIMPuJYJLkmvNWzZdv0PJGdxzMcRQJVFLUwWfM6KT/w="
+    # DOCKER_PASS
+    - secure: "dVwjxsCcVAJxWq86u7/1sNm/Xg7tZP+yZQcpvEW5313HcDy4EDVIVAr0SlAH8oXCKHEk9gFQRWOcPB528VxtXbpvGC+l8/OYu5DeAFZHx6ZlMIv7ojqJ1hSmpZvrZSr2+sUOef+rXXUWNITFeSXF8bOodgVBSyo90uwcjH1B+K7KqAGb3e1FOOLUSMkv1q2p1R9Bps5IaeKB86K+P/STfqvpc7BIIKBk7lHXUyxJCG51O9NCcmlvKsBBUz+4RKndMx7GH4QtL98J3UXLk8VkRqqETuArGoCLeTZkFKdeL0Gd7L09CkcOW8STXmek1sEV7obs1JwTbVS/xEUKX2uFPfszP1tevYwvtJaRCgIVd356Q7EeslkUZQvATbwzuC8qZgt/K4Ao2rWb1EZqkM0k0AWYQne8tjIl4zO7mVQD1NmVgyOGnHJrHQF7r/3SvMei5iWIi/Hqp+AMdr5oumYtqvPvfQReIgx+Zl+0ShAqTv/edyn4Yqa/rQ0maiydrFociZt44PjBDOc1LTbqaFASxKnSxPMCXSnceHlWOABfnM481ulYq9Ev+UJcdq2xdAMyLnKmOf4WcP1DHqUrH4UVppYZ4rEpmjrTqGSw6pvhaJI00mXqc1K4OtiyzyUV2T544dSIByO5Xc3V2xZYAOvUESL1GfrIfXjbVntoXy+lCSE="
+
 matrix:
   include:
     - env: IMAGE_TAG=x86_64-musl TARGET=x86_64-unknown-linux-musl OPENSSL_ARCH=linux-x86_64
-    - env: IMAGE_TAG=arm-musleabi TARGET=arm-unknown-linux-musleabi OPENSSL_ARCH=linux-generic32
-    - env: IMAGE_TAG=arm-musleabihf TARGET=arm-unknown-linux-musleabihf OPENSSL_ARCH=linux-generic32
-    - env: IMAGE_TAG=armv7-musleabihf TARGET=armv7-unknown-linux-musleabihf OPENSSL_ARCH=linux-generic32
+#    - env: IMAGE_TAG=arm-musleabi TARGET=arm-unknown-linux-musleabi OPENSSL_ARCH=linux-generic32
+#    - env: IMAGE_TAG=arm-musleabihf TARGET=arm-unknown-linux-musleabihf OPENSSL_ARCH=linux-generic32
+#    - env: IMAGE_TAG=armv7-musleabihf TARGET=armv7-unknown-linux-musleabihf OPENSSL_ARCH=linux-generic32
     - env: IMAGE_TAG=i686-musl TARGET=i686-unknown-linux-musl OPENSSL_ARCH=linux-generic32
-    - env: IMAGE_TAG=mips-musl TARGET=mips-unknown-linux-musl OPENSSL_ARCH=linux-mips32
-    - env: IMAGE_TAG=mipsel-musl TARGET=mipsel-unknown-linux-musl OPENSSL_ARCH=linux-mips32
+#    - env: IMAGE_TAG=mips-musl TARGET=mips-unknown-linux-musl OPENSSL_ARCH=linux-mips32
+#    - env: IMAGE_TAG=mipsel-musl TARGET=mipsel-unknown-linux-musl OPENSSL_ARCH=linux-mips32
 
 script:
-  - export DOCKER_REPO=messense/rust-musl-cross
   - echo "Building Docker image for target ${TARGET}"
   - docker build --build-arg TARGET="$TARGET" --build-arg OPENSSL_ARCH="$OPENSSL_ARCH" -t $DOCKER_REPO:$IMAGE_TAG .
   - docker run --rm -it -v "$(pwd)/tests":/home/rust/src $DOCKER_REPO:$IMAGE_TAG cargo build
@@ -23,5 +30,10 @@ script:
 after_success:
   - |
     if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_BRANCH" == "master" ]]; then
-    docker login -u $DOCKER_USER -p $DOCKER_PASS && docker push $DOCKER_REPO
+      echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+      PERSISTENT_TAG="${IMAGE_TAG}-$(date +'%Y%m%d-%H%M%S')"
+      docker tag "${DOCKER_REPO}:${IMAGE_TAG}" "${DOCKER_REPO}:${PERSISTENT_TAG}"
+
+      docker push "${DOCKER_REPO}:${IMAGE_TAG}"
+      docker push "${DOCKER_REPO}:${PERSISTENT_TAG}"
     fi
