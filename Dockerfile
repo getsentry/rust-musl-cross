@@ -30,11 +30,13 @@ ADD lets-encrypt-r3-cross-signed.crt /usr/local/share/ca-certificates
 RUN update-ca-certificates
 
 ADD config.mak /tmp/config.mak
+# https://github.com/richfelker/musl-cross-make/, tag v0.9.8
 RUN cd /tmp && \
-    curl -Lsq -o musl-cross-make.zip https://github.com/richfelker/musl-cross-make/archive/v0.9.8.zip && \
+    MUSL_CROSS_MAKE_VERSION=629189831f61b73ba1053624eee12ff6a816438f && \
+    curl -Lsq -o musl-cross-make.zip https://github.com/richfelker/musl-cross-make/archive/$MUSL_CROSS_MAKE_VERSION.zip && \
     unzip -q musl-cross-make.zip && \
     rm musl-cross-make.zip && \
-    mv musl-cross-make-0.9.8 musl-cross-make && \
+    mv musl-cross-make-* musl-cross-make && \
     cp /tmp/config.mak /tmp/musl-cross-make/config.mak && \
     cd /tmp/musl-cross-make && \
     TARGET=$TARGET make install > /tmp/musl-cross-make.log && \
