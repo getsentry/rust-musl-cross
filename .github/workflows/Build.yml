@@ -15,9 +15,9 @@ jobs:
     strategy:
       matrix:
         env:
-          # - IMAGE_TAG: aarch64-musl
-          #   TARGET: aarch64-unknown-linux-musl
-          #   OPENSSL_ARCH: linux-aarch64
+          - IMAGE_TAG: aarch64-musl
+            TARGET: aarch64-unknown-linux-musl
+            OPENSSL_ARCH: linux-aarch64
           # - IMAGE_TAG: arm-musleabi
           #   TARGET: arm-unknown-linux-musleabi
           #   OPENSSL_ARCH: linux-generic32
@@ -27,9 +27,9 @@ jobs:
           # - IMAGE_TAG: armv5te-musleabi
           #   TARGET: armv5te-unknown-linux-musleabi
           #   OPENSSL_ARCH: linux-generic32
-          # - IMAGE_TAG: armv7-musleabi
-          #   TARGET: armv7-unknown-linux-musleabi
-          #   OPENSSL_ARCH: linux-generic32
+          - IMAGE_TAG: armv7-musleabi
+            TARGET: armv7-unknown-linux-musleabi
+            OPENSSL_ARCH: linux-generic32
           # - IMAGE_TAG: armv7-musleabihf
           #   TARGET: armv7-unknown-linux-musleabihf
           #   OPENSSL_ARCH: linux-generic32
